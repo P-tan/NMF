@@ -5,11 +5,11 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace NMF
 {		
-	TEST_CLASS(UnitTest1)
+	TEST_CLASS(NMFTest)
 	{
 	public:
 		
-		TEST_METHOD(TestMethod1)
+		TEST_METHOD(TestNMF)
 		{
 			// TODO: テスト コードをここに挿入します
 		}
