@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 
+#include "NMF.h"
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace NMF
@@ -11,7 +13,10 @@ namespace NMF
 		
 		TEST_METHOD(TestNMF)
 		{
-			// TODO: テスト コードをここに挿入します
+			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
+			const int r = 3;
+			Mat U, V;
+			NMF_impl(X, r, U, V);
 		}
 
 	};
