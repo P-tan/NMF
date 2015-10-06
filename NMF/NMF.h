@@ -1,5 +1,7 @@
 #pragma once
 #include <cassert>
+#include <vector>
+#include <boost/timer.hpp>
 #include <Eigen/Core>
 
 typedef Eigen::MatrixXd Mat;
@@ -68,6 +70,38 @@ public:
 	{}
 };
 
+class StandardProgressReporter
+{
+	struct Progress {
+		int loop_no;
+		double l2norm;
+		double time;
+	};
+	std::vector<Progress> m_progress;
+	boost::timer m_timer;
+public:
+	StandardProgressReporter()
+		: m_progress()
+		, m_timer()
+	{
+
+	}
+	void Report(
+		const Mat &X,
+		const Mat &U,
+		const Mat &V,
+		int loop_count
+		)
+	{
+		const double l2norm = (X - U * V).norm();
+		Progress progress = {};
+		progress.loop_no = loop_count;
+		progress.l2norm = l2norm;
+		progress.time = m_timer.elapsed();
+		m_progress.push_back(progress);
+	}
+
+};
 //! @brief NMF Implementation 
 //!
 //! X = UV, X : n x m, U : n x r, V : r x m
