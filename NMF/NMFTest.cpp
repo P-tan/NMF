@@ -9,6 +9,8 @@ namespace NMF
 {		
 	TEST_CLASS(NMFTest)
 	{
+		const Mat X  = Mat(10, 20).setRandom().cwiseAbs();
+		const int r = 3;
 	public:
 		void WriteProgress(
 			const StandardProgressReporter &progressReporter, 
@@ -27,16 +29,12 @@ namespace NMF
 		
 		TEST_METHOD(TestNMF_impl)
 		{
-			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
-			const int r = 3;
 			Mat U, V;
 			NMF_impl(X, r, U, V);
 		}
 
 		TEST_METHOD(TestStandardProgressReporter)
 		{
-			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
-			const int r = 3;
 			Mat U, V;
 			StandardProgressReporter progressReporter;
 			NMF_impl(X, r, U, V, 
@@ -53,11 +51,19 @@ namespace NMF
 
 		TEST_METHOD(TestNMF_MU)
 		{
-			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
-			const int r = 3;
 			Mat U, V;
 			StandardProgressReporter progressReporter;
 			NMF_MU(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
+
+			string outfile = string(__func__) +  ".log";
+			WriteProgress(progressReporter, outfile);
+		}
+
+		TEST_METHOD(TestNMF_HALS)
+		{
+			Mat U, V;
+			StandardProgressReporter progressReporter;
+			NMF_HALS(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
 
 			string outfile = string(__func__) +  ".log";
 			WriteProgress(progressReporter, outfile);

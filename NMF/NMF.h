@@ -7,6 +7,7 @@
 #include <Eigen/Core>
 
 typedef Eigen::MatrixXd Mat;
+typedef Eigen::VectorXd Vec;
 
 //
 // Initializer
@@ -55,7 +56,6 @@ public:
 		Mat &U,
 		Mat &V)
 	{
-
 		assert(U.rows() == X.rows());
 		assert(U.cols() == V.rows());
 		assert(V.cols() == X.cols());
@@ -65,6 +65,33 @@ public:
                      (U.transpose() * U * V).array();
 	}
 };
+
+//! @brief Hierarchical Alternating Least Squares Algorithms
+//! @see Cichocki, A., & Anh-Huy, P. (2009). Fast local algorithms for large scale nonnegative matrix and tensor factorizations. IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences, 92(3), 708?721. http://www.bsp.brain.riken.jp/publications/2009/Cichocki-Phan-IEICE_col.pdf
+class HALSUpdater
+{
+public:
+	void operator()(
+		const Mat &X,
+		Mat &U,
+		Mat &V)
+	{
+		assert(U.rows() == X.rows());
+		assert(U.cols() == V.rows());
+		assert(V.cols() == X.cols());
+		Mat E = X - U * V;
+		const int K = U.cols();
+		for (int k = 0; k < K; ++k) {
+			Vec uk = U.col(k);
+			Vec vk = V.row(k);
+			const Mat Xk = E + uk * vk.transpose();
+			U.col(k) = (Xk * vk / vk.dot(vk)).cwiseMax(0);
+			V.row(k) = (Xk.transpose() * uk / uk.dot(uk)).cwiseMax(0);
+			E = Xk - U.col(k) * V.row(k);
+		}
+	}
+};
+
 
 //
 // ConvergenceTester
@@ -231,4 +258,25 @@ void NMF_MU(
 {
 	NMF_impl<ProgressReporter, ConvergenceTester, Initializer, MUUpdater>(
 		X, r, U, V, progressReporter, convergenceTester, initializer, MUUpdater());
+}
+//! @brief NMF by HALS
+//!
+//! X = UV, X : n x m, U : n x r, V : r x m
+template<
+	class ProgressReporter = NullProgressReporter,
+	class ConvergenceTester = DefaultConvergenceTester,
+	class Initializer = RandomInitializer
+>
+void NMF_HALS(
+	const Mat &X,
+	int r,
+	Mat &U,
+	Mat &V,
+	ProgressReporter &progressReporter = ProgressReporter(),
+	ConvergenceTester convergenceTester = ConvergenceTester(),
+	Initializer initializer = Initializer()
+	)
+{
+	NMF_impl<ProgressReporter, ConvergenceTester, Initializer, HALSUpdater>(
+		X, r, U, V, progressReporter, convergenceTester, initializer, HALSUpdater());
 }
