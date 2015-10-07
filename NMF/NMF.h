@@ -98,7 +98,7 @@ public:
 			os <<
 				loop_no << ", " <<
 				l2norm << ", " <<
-				time;
+				time * 1000;
 			return os;
 		}
 
