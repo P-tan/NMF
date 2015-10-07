@@ -82,11 +82,13 @@ public:
 
 class StandardProgressReporter
 {
+public:
 	struct Progress {
 		int loop_no;
 		double l2norm;
 		double time;
 	};
+private:
 	std::vector<Progress> m_progress;
 	boost::timer m_timer;
 public:
@@ -115,6 +117,7 @@ public:
 		m_progress.push_back(progress);
 	}
 
+	const std::vector<Progress>& GetProgress() const { return m_progress; }
 };
 //! @brief NMF Implementation 
 //!
@@ -133,7 +136,7 @@ void NMF_impl(
 	Initializer initializer = Initializer(),
 	Updater updater = Updater(),
 	ConvergenceTester convergenceTester = ConvergenceTester(),
-	ProgressReporter progressReporter = ProgressReporter()
+	ProgressReporter &progressReporter = ProgressReporter()
 	)
 {
 	assert(X.minCoeff() >= 0);
