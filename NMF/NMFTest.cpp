@@ -10,6 +10,20 @@ namespace NMF
 	TEST_CLASS(NMFTest)
 	{
 	public:
+		void WriteProgress(
+			const StandardProgressReporter &progressReporter, 
+			const string &outfile
+			) const 
+		{
+			ofstream ofs(outfile);
+			Assert::IsTrue(ofs.is_open());
+			ofs << StandardProgressReporter::Progress::Header() << endl;
+			for (auto &prg : progressReporter.GetProgress())
+			{
+				prg.DebugPrint(ofs) << endl;
+				Assert::IsFalse(!ofs);
+			}
+		}
 		
 		TEST_METHOD(TestNMF)
 		{
@@ -26,22 +40,27 @@ namespace NMF
 			Mat U, V;
 			StandardProgressReporter progressReporter;
 			NMF_impl(X, r, U, V, 
-				RandomInitializer(),
-				NullUpdater(),
+				progressReporter,
 				DefaultConvergenceTester(100, -1), 
-				progressReporter
+				RandomInitializer(),
+				NullUpdater()
 				);
 			Assert::AreEqual(101, (int)progressReporter.GetProgress().size());
 
 			string outfile = string(__func__) +  ".log";
-			ofstream ofs(outfile);
-			Assert::IsTrue(ofs.is_open());
-			ofs << StandardProgressReporter::Progress::Header() << endl;
-			for (auto &prg : progressReporter.GetProgress())
-			{
-				prg.DebugPrint(ofs) << endl;
-				Assert::IsFalse(!ofs);
-			}
+			WriteProgress(progressReporter, outfile);
+		}
+
+		TEST_METHOD(TestNMF_MU)
+		{
+			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
+			const int r = 3;
+			Mat U, V;
+			StandardProgressReporter progressReporter;
+			NMF_MU(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
+
+			string outfile = string(__func__) +  ".log";
+			WriteProgress(progressReporter, outfile);
 		}
 	};
 }

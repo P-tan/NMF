@@ -11,7 +11,7 @@ typedef Eigen::MatrixXd Mat;
 class RandomInitializer
 {
 public:
-	void Initialize(
+	void operator()(
 		const Mat &X,
 		int r,
 		Mat &U,
@@ -29,10 +29,32 @@ public:
 class NullUpdater
 {
 public:
-	void Update(
+	void operator()(
+		const Mat &X,
 		Mat &U,
 		Mat &V)
 	{
+	}
+};
+
+//! @brief Multicative Update 
+//! @see Daniel D. Lee and H. Sebastian Seung (2001). "Algorithms for Non-negative Matrix Factorization". Advances in Neural Information Processing Systems 13: Proceedings of the 2000 Conference. MIT Press. pp. 556?562.
+class MUUpdater
+{
+public:
+	void operator()(
+		const Mat &X,
+		Mat &U,
+		Mat &V)
+	{
+
+		assert(U.rows() == X.rows());
+		assert(U.cols() == V.rows());
+		assert(V.cols() == X.cols());
+        U.array() = U.array() * (X * V.transpose()).array() / 
+                     (U * V * V.transpose()).array();
+        V.array() = V.array() * (U.transpose() * X).array() /
+                     (U.transpose() * U * V).array();
 	}
 };
 
@@ -49,7 +71,7 @@ public:
 		, m_eps(eps)
 	{}
 
-	bool IsConverged(
+	bool operator()(
 		const Mat &X,
 		const Mat &U,
 		const Mat &V,
@@ -138,34 +160,55 @@ public:
 //!
 //! X = UV, X : n x m, U : n x r, V : r x m
 template<
-	class Initializer = RandomInitializer,
-	class Updater = NullUpdater, 
+	class ProgressReporter = NullProgressReporter,
 	class ConvergenceTester = DefaultConvergenceTester,
-	class ProgressReporter = NullProgressReporter
+	class Initializer = RandomInitializer,
+	class Updater = NullUpdater
 >
 void NMF_impl(
 	const Mat &X,
 	int r,
 	Mat &U,
 	Mat &V,
-	Initializer initializer = Initializer(),
-	Updater updater = Updater(),
+	ProgressReporter &progressReporter = ProgressReporter(),
 	ConvergenceTester convergenceTester = ConvergenceTester(),
-	ProgressReporter &progressReporter = ProgressReporter()
+	Initializer initializer = Initializer(),
+	Updater updater = Updater()
 	)
 {
 	assert(X.minCoeff() >= 0);
 
 	progressReporter.Initialize();
 
-	initializer.Initialize(X, r, U, V);
+	initializer(X, r, U, V);
 
 	int loop_count = 0;
 	progressReporter.Report(X, U, V, loop_count);
 	do {
-		updater.Update(U, V);
+		updater(X, U, V);
 		++loop_count;
 		progressReporter.Report(X, U, V, loop_count);
-	} while (!convergenceTester.IsConverged(X, U, V, loop_count));
+	} while (!convergenceTester(X, U, V, loop_count));
 }
 
+//! @brief NMF by multicative updating 
+//!
+//! X = UV, X : n x m, U : n x r, V : r x m
+template<
+	class ProgressReporter = NullProgressReporter,
+	class ConvergenceTester = DefaultConvergenceTester,
+	class Initializer = RandomInitializer
+>
+void NMF_MU(
+	const Mat &X,
+	int r,
+	Mat &U,
+	Mat &V,
+	ProgressReporter &progressReporter = ProgressReporter(),
+	ConvergenceTester convergenceTester = ConvergenceTester(),
+	Initializer initializer = Initializer()
+	)
+{
+	NMF_impl<ProgressReporter, ConvergenceTester, Initializer, MUUpdater>(
+		X, r, U, V, progressReporter, convergenceTester, initializer, MUUpdater());
+}
