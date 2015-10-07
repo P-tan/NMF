@@ -36,20 +36,29 @@ public:
 
 class DefaultConvergenceTester
 {
+	int m_max_loop_count;
+	double m_eps;
 public:
+	DefaultConvergenceTester(
+		int max_loop_count = 100,
+		double eps = 1e-7
+		)
+		: m_max_loop_count(max_loop_count)
+		, m_eps(eps)
+	{}
+
 	bool IsConverged(
 		const Mat &X,
 		const Mat &U,
 		const Mat &V,
 		int loop_count
-		)
+		) const
 	{
-		if (loop_count > 100) {
+		if (loop_count > m_max_loop_count) {
 			return true;
 		}
 		const double l2norm = (X - U * V).norm();
-		const double eps = 1e-7;
-		if (l2norm < eps)
+		if (l2norm < m_eps)
 		{
 			return true;
 		}
