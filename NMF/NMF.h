@@ -8,6 +8,10 @@
 
 typedef Eigen::MatrixXd Mat;
 
+//
+// Initializer
+//
+
 class RandomInitializer
 {
 public:
@@ -25,6 +29,10 @@ public:
 		V = V.setRandom().cwiseAbs();
 	}
 };
+
+//
+// Updater 
+//
 
 class NullUpdater
 {
@@ -58,6 +66,10 @@ public:
 	}
 };
 
+//
+// ConvergenceTester
+//
+
 class DefaultConvergenceTester
 {
 	int m_max_loop_count;
@@ -90,6 +102,9 @@ public:
 	}
 };
 
+//
+// Progress Reporter
+//
 
 class NullProgressReporter
 {
@@ -156,6 +171,11 @@ public:
 
 	const std::vector<Progress>& GetProgress() const { return m_progress; }
 };
+
+//
+// NMF 
+// 
+
 //! @brief NMF Implementation 
 //!
 //! X = UV, X : n x m, U : n x r, V : r x m
