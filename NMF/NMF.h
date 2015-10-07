@@ -54,7 +54,7 @@ public:
 		int loop_count
 		) const
 	{
-		if (loop_count > m_max_loop_count) {
+		if (loop_count >= m_max_loop_count) {
 			return true;
 		}
 		const double l2norm = (X - U * V).norm();
@@ -151,6 +151,6 @@ void NMF_impl(
 		updater.Update(U, V);
 		++loop_count;
 		progressReporter.Report(X, U, V, loop_count);
-	} while (convergenceTester.IsConverged(X, U, V, loop_count));
+	} while (!convergenceTester.IsConverged(X, U, V, loop_count));
 }
 
