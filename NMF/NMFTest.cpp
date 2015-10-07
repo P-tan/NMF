@@ -11,7 +11,12 @@ namespace NMF
 	{
 		const Mat X  = Mat(10, 20).setRandom().cwiseAbs();
 		const int r = 3;
+		Mat Uinit;
+		Mat Vinit;
 	public:
+		NMFTest() {
+			RandomInitializer()(X, r, Uinit, Vinit);
+		}
 		void WriteProgress(
 			const StandardProgressReporter &progressReporter, 
 			const string &outfile
@@ -29,18 +34,17 @@ namespace NMF
 		
 		TEST_METHOD(TestNMF_impl)
 		{
-			Mat U, V;
+			Mat U = Uinit, V = Vinit;
 			NMF_impl(X, r, U, V);
 		}
 
 		TEST_METHOD(TestStandardProgressReporter)
 		{
-			Mat U, V;
+			Mat U = Uinit, V = Vinit;
 			StandardProgressReporter progressReporter;
 			NMF_impl(X, r, U, V, 
 				progressReporter,
 				DefaultConvergenceTester(100, -1), 
-				RandomInitializer(),
 				NullUpdater()
 				);
 			Assert::AreEqual(101, (int)progressReporter.GetProgress().size());
@@ -51,7 +55,7 @@ namespace NMF
 
 		TEST_METHOD(TestNMF_MU)
 		{
-			Mat U, V;
+			Mat U = Uinit, V = Vinit;
 			StandardProgressReporter progressReporter;
 			NMF_MU(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
 
@@ -61,7 +65,7 @@ namespace NMF
 
 		TEST_METHOD(TestNMF_HALS)
 		{
-			Mat U, V;
+			Mat U = Uinit, V = Vinit;
 			StandardProgressReporter progressReporter;
 			NMF_HALS(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
 

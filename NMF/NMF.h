@@ -209,7 +209,6 @@ public:
 template<
 	class ProgressReporter = NullProgressReporter,
 	class ConvergenceTester = DefaultConvergenceTester,
-	class Initializer = RandomInitializer,
 	class Updater = NullUpdater
 >
 void NMF_impl(
@@ -219,15 +218,12 @@ void NMF_impl(
 	Mat &V,
 	ProgressReporter &progressReporter = ProgressReporter(),
 	ConvergenceTester convergenceTester = ConvergenceTester(),
-	Initializer initializer = Initializer(),
 	Updater updater = Updater()
 	)
 {
 	assert(X.minCoeff() >= 0);
 
 	progressReporter.Initialize();
-
-	initializer(X, r, U, V);
 
 	int loop_count = 0;
 	progressReporter.Report(X, U, V, loop_count);
@@ -243,8 +239,7 @@ void NMF_impl(
 //! X = UV, X : n x m, U : n x r, V : r x m
 template<
 	class ProgressReporter = NullProgressReporter,
-	class ConvergenceTester = DefaultConvergenceTester,
-	class Initializer = RandomInitializer
+	class ConvergenceTester = DefaultConvergenceTester
 >
 void NMF_MU(
 	const Mat &X,
@@ -252,20 +247,18 @@ void NMF_MU(
 	Mat &U,
 	Mat &V,
 	ProgressReporter &progressReporter = ProgressReporter(),
-	ConvergenceTester convergenceTester = ConvergenceTester(),
-	Initializer initializer = Initializer()
+	ConvergenceTester convergenceTester = ConvergenceTester()
 	)
 {
-	NMF_impl<ProgressReporter, ConvergenceTester, Initializer, MUUpdater>(
-		X, r, U, V, progressReporter, convergenceTester, initializer, MUUpdater());
+	NMF_impl<ProgressReporter, ConvergenceTester, MUUpdater>(
+		X, r, U, V, progressReporter, convergenceTester, MUUpdater());
 }
 //! @brief NMF by HALS
 //!
 //! X = UV, X : n x m, U : n x r, V : r x m
 template<
 	class ProgressReporter = NullProgressReporter,
-	class ConvergenceTester = DefaultConvergenceTester,
-	class Initializer = RandomInitializer
+	class ConvergenceTester = DefaultConvergenceTester
 >
 void NMF_HALS(
 	const Mat &X,
@@ -273,10 +266,9 @@ void NMF_HALS(
 	Mat &U,
 	Mat &V,
 	ProgressReporter &progressReporter = ProgressReporter(),
-	ConvergenceTester convergenceTester = ConvergenceTester(),
-	Initializer initializer = Initializer()
+	ConvergenceTester convergenceTester = ConvergenceTester()
 	)
 {
-	NMF_impl<ProgressReporter, ConvergenceTester, Initializer, HALSUpdater>(
-		X, r, U, V, progressReporter, convergenceTester, initializer, HALSUpdater());
+	NMF_impl<ProgressReporter, ConvergenceTester, HALSUpdater>(
+		X, r, U, V, progressReporter, convergenceTester, HALSUpdater());
 }
