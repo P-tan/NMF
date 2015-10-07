@@ -70,6 +70,7 @@ public:
 class NullProgressReporter
 {
 public:
+	void Initialize() {}
 	void Report(
 		const Mat &X,
 		const Mat &U,
@@ -93,8 +94,12 @@ public:
 		: m_progress()
 		, m_timer()
 	{
-
 	}
+
+	void Initialize() {
+		m_timer.restart();
+	}
+
 	void Report(
 		const Mat &X,
 		const Mat &U,
@@ -132,6 +137,8 @@ void NMF_impl(
 	)
 {
 	assert(X.minCoeff() >= 0);
+
+	progressReporter.Initialize();
 
 	initializer.Initialize(X, r, U, V);
 
