@@ -25,7 +25,7 @@ namespace NMF
 			}
 		}
 		
-		TEST_METHOD(TestNMF)
+		TEST_METHOD(TestNMF_impl)
 		{
 			const Mat X = Mat(10, 20).setRandom().cwiseAbs();
 			const int r = 3;
