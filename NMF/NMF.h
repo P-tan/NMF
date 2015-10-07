@@ -1,5 +1,7 @@
 #pragma once
 #include <cassert>
+#include <iosfwd>
+#include <string>
 #include <vector>
 #include <boost/timer.hpp>
 #include <Eigen/Core>
@@ -87,6 +89,19 @@ public:
 		int loop_no;
 		double l2norm;
 		double time;
+
+		static const char * Header() { return "loop_no, L2Norm, Time_msec"; }
+		std::ostream& DebugPrint(
+			std::ostream& os
+			) const
+		{
+			os <<
+				loop_no << ", " <<
+				l2norm << ", " <<
+				time;
+			return os;
+		}
+
 	};
 private:
 	std::vector<Progress> m_progress;

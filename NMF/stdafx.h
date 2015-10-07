@@ -10,5 +10,7 @@
 // CppUnitTest ‚Ìƒwƒbƒ_[
 #include "CppUnitTest.h"
 
+#include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>

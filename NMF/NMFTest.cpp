@@ -32,12 +32,15 @@ namespace NMF
 				progressReporter
 				);
 			Assert::AreEqual(101, (int)progressReporter.GetProgress().size());
+
+			string outfile = string(__func__) +  ".log";
+			ofstream ofs(outfile);
+			Assert::IsTrue(ofs.is_open());
+			ofs << StandardProgressReporter::Progress::Header() << endl;
 			for (auto &prg : progressReporter.GetProgress())
 			{
-				cout <<
-					prg.loop_no << ", " <<
-					prg.l2norm << ", " <<
-					prg.time << endl;
+				prg.DebugPrint(ofs) << endl;
+				Assert::IsFalse(!ofs);
 			}
 		}
 	};
