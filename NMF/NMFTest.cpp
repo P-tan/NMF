@@ -15,7 +15,7 @@ namespace NMF
 		const int r = 3;
 #else 
 		const int m = 100;
-		const int n = 200;
+		const int n = 80;
 		const int r = 30;
 #endif
 		Mat X;
