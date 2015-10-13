@@ -65,8 +65,9 @@ public:
 
 //! @brief Hierarchical Alternating Least Squares Algorithms
 //! @see Cichocki, A., & Anh-Huy, P. (2009). Fast local algorithms for large scale nonnegative matrix and tensor factorizations. IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences, 92(3), 708?721. http://www.bsp.brain.riken.jp/publications/2009/Cichocki-Phan-IEICE_col.pdf
-class HALSUpdater
+class FastHALSUpdater
 {
+	const double eps = 1e-8;
 public:
 	void operator()(
 		const Mat &X,
@@ -76,15 +77,22 @@ public:
 		assert(U.rows() == X.rows());
 		assert(U.cols() == V.rows());
 		assert(V.cols() == X.cols());
-		Mat E = X - U * V;
+		Mat A = X * V.transpose();
+		Mat B = V * V.transpose();
 		const int K = U.cols();
 		for (int k = 0; k < K; ++k) {
-			Vec uk = U.col(k);
-			Vec vk = V.row(k);
-			const Mat Xk = E + uk * vk.transpose();
-			U.col(k) = (Xk * vk / vk.dot(vk)).cwiseMax(0);
-			V.row(k) = (Xk.transpose() * uk / uk.dot(uk)).cwiseMax(0);
-			E = Xk - U.col(k) * V.row(k);
+			const Vec Ak = A.col(k);
+			const Vec Bk = B.col(k);
+			const Vec uk = U.col(k);
+			U.col(k) = ((Ak - U * Bk + uk * B(k, k)) / B(k, k)).cwiseMax(eps);
+		}
+		A = X.transpose() * U;
+		B = U.transpose() * U;
+		for (int k = 0; k < K; ++k) {
+			const Vec Ak = A.col(k);
+			const Vec Bk = B.col(k);
+			const Vec vk = V.row(k);
+			V.row(k) = ((Ak - V.transpose() * Bk + vk * B(k, k)) / B(k, k)).cwiseMax(eps);
 		}
 	}
 };
@@ -117,8 +125,9 @@ public:
 		if (loop_count >= m_max_loop_count) {
 			return true;
 		}
-		const double l2norm = (X - U * V).norm();
-		if (l2norm < m_eps)
+		// Normalized Residual Value 
+		const double nrv = (X - U * V).squaredNorm() / X.squaredNorm();
+		if (nrv < m_eps)
 		{
 			return true;
 		}
@@ -148,17 +157,17 @@ class StandardProgressReporter
 public:
 	struct Progress {
 		int loop_no;
-		double l2norm;
+		double nrv; //!< Normalized Residual Value
 		double time;
 
-		static const char * Header() { return "loop_no, L2Norm, Time_msec"; }
+		static const char * Header() { return "loop_no, NRV, Time_msec"; }
 		std::ostream& DebugPrint(
 			std::ostream& os
 			) const
 		{
 			os <<
 				loop_no << ", " <<
-				l2norm << ", " <<
+				nrv << ", " <<
 				time * 1000;
 			return os;
 		}
@@ -185,10 +194,10 @@ public:
 		int loop_count
 		)
 	{
-		const double l2norm = (X - U * V).norm();
+		const double nrv = (X - U * V).squaredNorm() / X.squaredNorm();
 		Progress progress = {};
 		progress.loop_no = loop_count;
-		progress.l2norm = l2norm;
+		progress.nrv = nrv;
 		progress.time = m_timer.elapsed();
 		m_progress.push_back(progress);
 	}
@@ -257,7 +266,7 @@ template<
 	class ProgressReporter = NullProgressReporter,
 	class ConvergenceTester = DefaultConvergenceTester
 >
-void NMF_HALS(
+void NMF_FastHALS(
 	const Mat &X,
 	int r,
 	Mat &U,
@@ -266,6 +275,6 @@ void NMF_HALS(
 	ConvergenceTester convergenceTester = ConvergenceTester()
 	)
 {
-	NMF_impl<ProgressReporter, ConvergenceTester, HALSUpdater>(
-		X, r, U, V, progressReporter, convergenceTester, HALSUpdater());
+	NMF_impl<ProgressReporter, ConvergenceTester, FastHALSUpdater>(
+		X, r, U, V, progressReporter, convergenceTester, FastHALSUpdater());
 }

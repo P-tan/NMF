@@ -9,16 +9,22 @@ namespace NMF
 {		
 	TEST_CLASS(NMFTest)
 	{
-		const int n = 100;
-		const int m = 200;
-		const int r = 10;
+#ifndef NDEBUG
+		const int m = 10;
+		const int n = 20;
+		const int r = 3;
+#else 
+		const int m = 100;
+		const int n = 200;
+		const int r = 30;
+#endif
 		Mat X;
 		Mat Uinit;
 		Mat Vinit;
 	public:
 		NMFTest() {
 			srand(0);
-			X = Mat::Random(n, m).cwiseAbs();
+			X = Mat::Random(m, n).cwiseAbs();
 			RandomInitializer()(X, r, Uinit, Vinit);
 		}
 		void WriteProgress(
@@ -77,11 +83,11 @@ namespace NMF
 			WriteProgress(progressReporter, outfile);
 		}
 
-		TEST_METHOD(TestNMF_HALS)
+		TEST_METHOD(TestNMF_FastHALS)
 		{
 			Mat U = Uinit, V = Vinit;
 			StandardProgressReporter progressReporter;
-			NMF_HALS(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
+			NMF_FastHALS(X, r, U, V, progressReporter, DefaultConvergenceTester(100, -1));
 
 			string outfile = string(__func__) +  ".log";
 			WriteProgress(progressReporter, outfile);
