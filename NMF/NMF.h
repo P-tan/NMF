@@ -23,11 +23,8 @@ public:
 		Mat &V
 		)
 	{
-		U.resize(X.rows(), r);
-		V.resize(r, X.cols());
-
-		U = U.setRandom().cwiseAbs();
-		V = V.setRandom().cwiseAbs();
+		U = Mat::Random(X.rows(), r).cwiseAbs();
+		V = Mat::Random(r, X.cols()).cwiseAbs();
 	}
 };
 

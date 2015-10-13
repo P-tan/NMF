@@ -9,12 +9,16 @@ namespace NMF
 {		
 	TEST_CLASS(NMFTest)
 	{
-		const Mat X  = Mat(10, 20).setRandom().cwiseAbs();
-		const int r = 3;
+		const int n = 100;
+		const int m = 200;
+		const int r = 10;
+		Mat X;
 		Mat Uinit;
 		Mat Vinit;
 	public:
 		NMFTest() {
+			srand(0);
+			X = Mat::Random(n, m).cwiseAbs();
 			RandomInitializer()(X, r, Uinit, Vinit);
 		}
 		void WriteProgress(
@@ -30,6 +34,16 @@ namespace NMF
 				prg.DebugPrint(ofs) << endl;
 				Assert::IsFalse(!ofs);
 			}
+		}
+
+		void WriteMat(
+			const Mat &m,
+			const string &outfile
+			)
+		{
+			ofstream ofs(outfile);
+			Assert::IsTrue(ofs.is_open());
+			ofs << m; 
 		}
 		
 		TEST_METHOD(TestNMF_impl)
