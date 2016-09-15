@@ -68,6 +68,8 @@ public:
 class FastHALSUpdater
 {
 	const double eps = 1e-8;
+	Mat A;
+	Mat B;
 public:
 	void operator()(
 		const Mat &X,
@@ -77,8 +79,8 @@ public:
 		assert(U.rows() == X.rows());
 		assert(U.cols() == V.rows());
 		assert(V.cols() == X.cols());
-		Mat A = X * V.transpose();
-		Mat B = V * V.transpose();
+		A = X * V.transpose();
+		B = V * V.transpose();
 		const int K = U.cols();
 		for (int k = 0; k < K; ++k) {
 			const Vec Ak = A.col(k);
@@ -97,6 +99,26 @@ public:
 	}
 };
 
+//! @brief Greedy Coordinate Descent Algorithm
+//! @see Hsieh, C.-J., & Dhillon, I. S. (2011). Fast coordinate descent methods with variable selection for non-negative matrix factorization. In ACM SIGKDD (pp. 1064?1072)
+class GCDUpdater
+{
+	Mat A;
+	Mat B;
+	Mat S;
+	Mat D;
+public:
+	void operator()(
+		const Mat &X,
+		Mat &U,
+		Mat &V)
+	{
+		B = V.transpose() * V;
+		A = U * B - X * V.transpose();
+		S = (U - A * B.cwiseInverse().diagonal()).cwiseMax(0) - U;
+		D = -A.array() * S.array() - B.diagonal() * S.pow(2.0) / 2;
+	}
+};
 
 //
 // ConvergenceTester
