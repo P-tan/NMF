@@ -1,13 +1,14 @@
-#pragma once
+﻿#pragma once
 #include <cassert>
 #include <iosfwd>
 #include <string>
 #include <vector>
 #include <boost/timer.hpp>
-#include <Eigen/Core>
+#include <Eigen/Eigen>
 
-typedef Eigen::MatrixXd Mat;
-typedef Eigen::VectorXd Vec;
+using Mat = Eigen::MatrixXd;
+using Vec = Eigen::VectorXd;
+using Index = Eigen::Index;
 
 //
 // Initializer
@@ -36,9 +37,9 @@ class NullUpdater
 {
 public:
 	void operator()(
-		const Mat &X,
-		Mat &U,
-		Mat &V)
+		const Mat &/* X */,
+		Mat &/* U */,
+		Mat &/* V */)
 	{
 	}
 };
@@ -81,8 +82,8 @@ public:
 		assert(V.cols() == X.cols());
 		A = X * V.transpose();
 		B = V * V.transpose();
-		const int K = U.cols();
-		for (int k = 0; k < K; ++k) {
+		const auto K = U.cols();
+		for (Index k = 0; k < K; ++k) {
 			const Vec Ak = A.col(k);
 			const Vec Bk = B.col(k);
 			const Vec uk = U.col(k);
