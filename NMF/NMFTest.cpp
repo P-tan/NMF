@@ -43,13 +43,13 @@ namespace NMF
 		}
 
 		void WriteMat(
-			const Mat &m,
+			const Mat &mat,
 			const string &outfile
 			)
 		{
 			ofstream ofs(outfile);
 			Assert::IsTrue(ofs.is_open());
-			ofs << m; 
+			ofs << mat; 
 		}
 		
 		TEST_METHOD(TestNMF_impl)
